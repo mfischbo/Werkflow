@@ -1,0 +1,10 @@
+package de.artignition.werkflow.demon;
+
+import de.artignition.werkflow.domain.JobDescriptor;
+
+public class JobInstanceExecutor {
+
+	public JobInstanceExecutor(JobDescriptor descriptor) {
+		
+	}
+}

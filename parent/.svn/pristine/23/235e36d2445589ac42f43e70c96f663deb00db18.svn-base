@@ -1,0 +1,10 @@
+package de.artignition.werkflow.io;
+
+import java.io.Serializable;
+
+public interface ResponsiveTextMessageContentDelegate {
+
+	String handleMessage(String text);
+	
+	Serializable handleMessage(Serializable object);
+}

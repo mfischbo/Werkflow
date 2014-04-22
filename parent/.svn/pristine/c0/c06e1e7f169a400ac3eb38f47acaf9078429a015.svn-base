@@ -1,0 +1,61 @@
+package de.artignition.werkflow.demon;
+
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+
+import de.artignition.werkflow.config.CoreConfig;
+import de.artignition.werkflow.config.WerkflowEnvironment;
+
+public class Application {
+
+	private AnnotationConfigApplicationContext		ctx;
+	
+	private boolean									executing;
+	private boolean									pausing;
+	
+	public Application(String[] args) {
+		
+		// pull up the parent spring context
+		WerkflowEnvironment env = new WerkflowEnvironment(args);
+		ctx = new AnnotationConfigApplicationContext();
+		ctx.setEnvironment(env.getEnvironment());
+		ctx.register(CoreConfig.class);
+		ctx.refresh();
+	}
+
+	public void execute() {
+
+		this.executing = true;
+		this.pausing   = false;
+		
+		while (executing) {
+		/*	
+			AdministrationCommand c = this.cmdDispatcher.nextCommand();
+			if (c != null) {
+				if (c.getScope() == Scope.ENGINE) {
+					if (c.getCommand() == Command.HALT)
+						this.executing = false;
+					
+					if (c.getCommand() == Command.PAUSE)
+						this.pausing = true;
+					
+					if (c.getCommand() == Command.RESUME)
+						this.pausing = false;
+				}
+			}
+			*/
+			try {
+				Thread.sleep(1000L);
+				Thread.yield();
+			} catch (Exception ex) {
+				
+			}
+			
+			if (!this.pausing) {
+				// execute jobs
+			} else {
+				// sleep for n ms
+			}
+		}
+		System.exit(0);
+	}
+}

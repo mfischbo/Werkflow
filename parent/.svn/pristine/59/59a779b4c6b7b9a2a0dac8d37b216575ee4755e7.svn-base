@@ -1,0 +1,17 @@
+package de.artignition.werkflow.plugin;
+
+public abstract class PluginExitStatus {
+
+	protected PluginExecutionStatus		execStatus;
+	
+	public enum PluginExecutionStatus {
+		PROCESSING,
+		IDLE,
+		SUCCEEDED,
+		FAILED
+	}
+	
+	public PluginExecutionStatus getPluginExecutionStatus() {
+		return this.execStatus;
+	}
+}

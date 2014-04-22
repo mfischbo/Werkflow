@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.collections.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.paint.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane id="AnchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="705.0" prefWidth="1200.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="de.artignition.werkflow.client.controller.JobEditController">
+  <children>
+    <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="100.0" prefWidth="373.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <children>
+        <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="-Infinity" prefHeight="200.0" prefWidth="240.0">
+          <children>
+            <VBox prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+              <children>
+                <ScrollPane fitToWidth="true" pannable="false" prefHeight="527.0" prefWidth="200.0" vbarPolicy="ALWAYS" VBox.vgrow="ALWAYS">
+                  <content>
+                    <AnchorPane id="Content" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-1.0" minWidth="-1.0" prefHeight="516.0" prefWidth="184.0">
+                      <children>
+                        <VBox fx:id="pluginsContentBox" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                      </children>
+                    </AnchorPane>
+                  </content>
+                </ScrollPane>
+                <FlowPane prefHeight="200.0" prefWidth="200.0">
+                  <children>
+                    <Label id="lblSelPlugName" fx:id="lblSelPlgName" prefWidth="175.0" text="Name:" textAlignment="CENTER">
+                      <font>
+                        <Font name="System Bold" size="13.0" fx:id="x1" />
+                      </font>
+                      <FlowPane.margin>
+                        <Insets left="10.0" top="10.0" fx:id="x3" />
+                      </FlowPane.margin>
+                    </Label>
+                    <Label id="lblSelPlugDesc" fx:id="lblSelPlgDesc" prefHeight="16.0" prefWidth="175.0" text="Description" wrapText="true">
+                      <FlowPane.margin>
+                        <Insets left="10.0" fx:id="x2" />
+                      </FlowPane.margin>
+                    </Label>
+                    <Label font="$x1" text="Inputs">
+                      <FlowPane.margin>
+                        <Insets left="10.0" top="12.0" />
+                      </FlowPane.margin>
+                    </Label>
+                    <Label id="lblSelPlugNumIns" fx:id="lblSelPlgNumIns" prefWidth="160.0" text="Label" textAlignment="RIGHT" wrapText="false">
+                      <FlowPane.margin>
+                        <Insets left="8.0" top="12.0" />
+                      </FlowPane.margin>
+                    </Label>
+                    <Label font="$x1" text="Types" FlowPane.margin="$x2" />
+                    <Label id="selPlugTypesIn" fx:id="lblSelPlgTypesIn" prefWidth="164.0" text="Label" wrapText="true">
+                      <FlowPane.margin>
+                        <Insets left="8.0" fx:id="x4" />
+                      </FlowPane.margin>
+                    </Label>
+                    <Label font="$x1" text="Outputs" FlowPane.margin="$x3" />
+                    <Label fx:id="lblSelPlgNumOuts" prefWidth="147.0" text="Label" textAlignment="RIGHT">
+                      <FlowPane.margin>
+                        <Insets left="8.0" top="10.0" />
+                      </FlowPane.margin>
+                    </Label>
+                    <Label font="$x1" text="Types" FlowPane.margin="$x2" />
+                    <Label fx:id="lblSelPlgTypesOut" prefWidth="164.0" text="Label" textAlignment="RIGHT" wrapText="true" FlowPane.margin="$x4" />
+                  </children>
+                </FlowPane>
+              </children>
+            </VBox>
+          </children>
+        </AnchorPane>
+        <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="705.0" prefWidth="700.0" HBox.hgrow="ALWAYS">
+          <children>
+            <ScrollPane id="graphCanvas" hbarPolicy="ALWAYS" prefHeight="200.0" prefWidth="200.0" vbarPolicy="ALWAYS" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+              <content>
+                <AnchorPane id="editAreaPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-1.0" prefHeight="705.0" prefWidth="760.0">
+                  <children>
+                    <Pane fx:id="canvas" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                  </children>
+                </AnchorPane>
+              </content>
+            </ScrollPane>
+          </children>
+        </AnchorPane>
+        <AnchorPane prefHeight="200.0" prefWidth="200.0">
+          <children>
+            <VBox prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+              <children>
+                <TextField prefWidth="200.0" promptText="Job Name">
+                  <VBox.margin>
+                    <Insets left="12.0" right="12.0" top="24.0" />
+                  </VBox.margin>
+                </TextField>
+                <TextArea prefWidth="200.0" promptText="Job Description" wrapText="true">
+                  <VBox.margin>
+                    <Insets left="12.0" right="12.0" top="8.0" fx:id="x5" />
+                  </VBox.margin>
+                </TextArea>
+                <Label text="Store on Engine">
+                  <VBox.margin>
+                    <Insets left="12.0" top="8.0" />
+                  </VBox.margin>
+                </Label>
+                <ChoiceBox fx:id="engineChoice" prefWidth="176.0" VBox.margin="$x5">
+                  <items>
+                    <FXCollections fx:factory="observableArrayList">
+                      <String fx:value="Item 1" />
+                      <String fx:value="Item 2" />
+                      <String fx:value="Item 3" />
+                    </FXCollections>
+                  </items>
+                </ChoiceBox>
+                <HBox prefHeight="100.0" prefWidth="200.0" VBox.margin="$x5">
+                  <children>
+                    <Button mnemonicParsing="false" onAction="#cancelEdit" text="Cancel">
+                      <HBox.margin>
+                        <Insets />
+                      </HBox.margin>
+                    </Button>
+                    <Button id="btnSaveJob" mnemonicParsing="false" onAction="#saveJob" text="Save">
+                      <HBox.margin>
+                        <Insets left="12.0" />
+                      </HBox.margin>
+                    </Button>
+                  </children>
+                </HBox>
+              </children>
+            </VBox>
+          </children>
+        </AnchorPane>
+      </children>
+    </HBox>
+  </children>
+</AnchorPane>

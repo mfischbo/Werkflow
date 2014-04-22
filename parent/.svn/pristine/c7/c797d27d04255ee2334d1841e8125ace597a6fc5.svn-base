@@ -1,0 +1,5 @@
+package de.artignition.werkflow.plugin;
+
+public class PluginParameters {
+
+}

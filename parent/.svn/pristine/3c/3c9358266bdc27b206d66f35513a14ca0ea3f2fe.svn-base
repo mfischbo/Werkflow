@@ -1,0 +1,66 @@
+package de.artignition.werkflow.demon;
+
+import de.artignition.werkflow.domain.PluginInstance;
+import de.artignition.werkflow.domain.WorkItem;
+import de.artignition.werkflow.domain.WorkItem_;
+import de.artignition.werkflow.repository.WorkItemRepository;
+
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.domain.Specifications;
+
+public class WorkItemRouter {
+
+	@Autowired
+	private WorkItemRepository 		wiRepo;
+
+	public WorkItem[] getItemOfWork(final PluginInstance instance) {
+
+		int predecessors = instance.getJobPlugin().getInboundConnections().size();
+		
+		// if we do not have predecessors return null
+		if (predecessors == 0)
+			return new WorkItem[0];
+
+		// get next matching item
+		if (predecessors == 1) {
+			Specifications<WorkItem> specs = Specifications.where(PluginInstanceIs(instance));
+        
+			WorkItem item = wiRepo.findOne(specs);
+			if (item == null) {
+				return new WorkItem[0];
+			}
+			WorkItem[] retval = new WorkItem[1];
+			retval[0] = item;
+			return retval;
+		} 
+
+		// take the join hint into consideration to find a matching tuple
+		if (predecessors > 1) {
+			// TODO: Implement this! Needs to find all workitems for the given instance with equal joinHints
+		}
+		return null;
+	}
+	
+	
+	static Specification<WorkItem> PluginInstanceIs(final PluginInstance instance) {
+		return new Specification<WorkItem>() {
+			@Override
+			public Predicate toPredicate(Root<WorkItem> root,
+				CriteriaQuery<?> arg1, CriteriaBuilder cb) {
+				return cb.equal(root.get(WorkItem_.owner), instance);
+			}
+		};
+	}
+
+
+	public void routeOutput(PluginInstance instance, WorkItem[] output) {
+	
+		
+	}
+}

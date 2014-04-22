@@ -1,0 +1,110 @@
+package de.artignition.werkflow.demon;
+
+import de.artignition.werkflow.domain.PluginInstance;
+import de.artignition.werkflow.domain.WorkItem;
+import de.artignition.werkflow.plugin.Plugin;
+import de.artignition.werkflow.plugin.PluginExecutionState;
+import de.artignition.werkflow.plugin.PluginExitStatus;
+import de.artignition.werkflow.plugin.PluginExitStatus.Status;
+import de.artignition.werkflow.repository.WorkItemProvider;
+
+class PluginExecutor implements Runnable {
+
+	private PluginInstance instance;
+
+	private int predecessors;
+	private int successors;
+
+	private Plugin plugin;
+
+	private boolean isRunning;
+
+	private WorkItemProvider itemProvider;
+
+	PluginExecutor(PluginInstance instance) throws Exception {
+		this.instance = instance;
+		this.plugin = PluginExecutionPreparator.prepare(instance);
+		this.predecessors = instance.getJobPlugin().getPredecessors().size();
+		this.successors = instance.getJobPlugin().getSuccessors().size();
+
+		/*
+		 * At this point the plugin's state is as following: - PluginParams are
+		 * set - Input / Output is null
+		 */
+	}
+
+	@Override
+	public void run() {
+
+		// execute the beforeExecution call.
+		this.plugin.beforeExecution();
+
+		this.isRunning = true;
+		while (isRunning) {
+			WorkItem[] items = itemProvider.getItemOfWork(instance);
+
+			// check if we have data from each predecessor
+			// if no predecessor is available this is a "start" plugin and needs
+			// to execute anyway
+			if (items.length == predecessors) {
+				isRunning = executeStep(items);
+			} else {
+				
+				// no data available. Check on the predecessor's execution state
+				// and consider if we're finished
+				// TODO: Do it
+			}
+		}
+	}
+
+	private boolean executeStep(WorkItem[] items) {
+		
+		// assign data to inputs
+		boolean isDataAssigned = false;
+
+		try {
+			isDataAssigned = PluginExecutionPreparator.assignWorkItems(plugin,
+					items);
+		} catch (Exception ex) {
+			// TODO: Is there even a chance to recover?
+		}
+
+		if (isDataAssigned) {
+			plugin.beforeWorkItemProcessing();
+
+			instance.setState(PluginExecutionState.PROCESSING);
+			createSavePoint();
+
+			PluginExitStatus status = plugin.execute();
+			if (status.getExitStatus() == Status.SUCCESS
+					|| status.getExitStatus() == Status.IDLE) {
+				plugin.afterWorkItemProcessing();
+				WorkItem[] output = PluginExecutionPreparator
+						.extractWorkItems(plugin);
+				itemProvider.routeOutput(output);
+
+				int stpCount = instance.getStepCount() + 1;
+				instance.setStepCount(stpCount);
+				if (status.getExitStatus() == Status.SUCCESS)
+					instance.setState(PluginExecutionState.SUCCEEDED);
+				if (status.getExitStatus() == Status.IDLE)
+					instance.setState(PluginExecutionState.IDLE);
+				createSavePoint();
+				return true;
+			} else if (status.getExitStatus() == Status.FAILED) {
+				// TODO: Implement fault handling routine
+				return false;
+			}
+		} else {
+			return false;
+		}
+		// this point should not be reached
+		return false;
+	}
+
+	private void createSavePoint() {
+		// TODO Auto-generated method stub
+
+	}
+
+}

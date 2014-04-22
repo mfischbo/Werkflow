@@ -1,0 +1,48 @@
+package de.artignition.werkflow.plugin;
+
+public abstract class AbstractPlugin implements Plugin {
+
+	public abstract PluginExitStatus execute();
+	
+	public void beforeExecution() {
+		
+	} 
+
+	public void afterExecution() {
+		
+	}
+
+	public void beforeWorkItemProcessing() {
+		
+	}
+
+	public void afterPayloadProcessing() {
+		
+	}
+
+	public void setPluginParameter(PluginParameters params) {
+		// TODO Auto-generated method stub
+	}
+
+	public void setWorkItem(WorkItem input) throws IllegalAccessException,
+			IllegalArgumentException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public boolean hasCustomStateChange() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	public boolean hasCustomDataLoader() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	public boolean hasCustomOutputRouting() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+}
