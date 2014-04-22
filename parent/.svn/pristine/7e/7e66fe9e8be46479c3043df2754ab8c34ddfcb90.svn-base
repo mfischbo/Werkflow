@@ -1,8 +1,0 @@
-package de.artignition.werkflow.domain;
-
-public enum PluginExecutionState {
-	PROCESSING,
-	IDLE,
-	SUCCESS,
-	FAILED
-}
