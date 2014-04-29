@@ -1,8 +1,10 @@
 package de.artignition.werkflow.domain;
 
+import java.io.Serializable;
 import java.util.Map;
 
 import javax.persistence.Basic;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -10,7 +12,6 @@ import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 
 @Entity
 @Table(name = "PluginInstance")
@@ -33,8 +34,8 @@ public class PluginInstance extends Domain {
 	@JoinColumn(name = "JobPlugin_id", referencedColumnName = "id")
 	private JobPlugin			jobPlugin;
 	
-	@Transient//@ElementCollection
-	private Map<String, byte[]>	parameters;
+	@ElementCollection
+	private Map<String, Serializable>	parameters;
 
 	public Integer getStepCount() {
 		return stepCount;
@@ -68,11 +69,11 @@ public class PluginInstance extends Domain {
 		this.jobPlugin = jobPlugin;
 	}
 
-	public Map<String, byte[]> getParameters() {
+	public Map<String, Serializable> getParameters() {
 		return parameters;
 	}
 
-	public void setParameters(Map<String, byte[]> parameters) {
+	public void setParameters(Map<String, Serializable> parameters) {
 		this.parameters = parameters;
 	}
 }

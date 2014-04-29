@@ -1,5 +1,6 @@
 package de.artignition.werkflow.domain;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.persistence.Basic;
@@ -31,6 +32,10 @@ public class JobDescriptor extends Domain {
 	
 	@OneToMany(mappedBy = "jobDescriptor", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	private List<JobPlugin>	plugins;
+	
+	public JobDescriptor() {
+		this.plugins = new LinkedList<JobPlugin>();
+	}
 	
 	public String getName() {
 		return name;

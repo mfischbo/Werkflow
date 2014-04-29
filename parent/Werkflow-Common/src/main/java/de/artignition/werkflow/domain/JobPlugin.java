@@ -1,18 +1,19 @@
 package de.artignition.werkflow.domain;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
 import javax.persistence.Basic;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 
 @Entity
 @Table(name = "JobPlugin")
@@ -27,8 +28,8 @@ public class JobPlugin extends Domain {
 	@JoinColumn(name = "JobDescriptor_Id", referencedColumnName = "id")
 	private JobDescriptor jobDescriptor;
 	
-	@Transient//@ElementCollection
-	private Map<String, byte[]>	parameters;
+	@ElementCollection
+	private Map<String, Serializable>	parameters;
 
 	@Basic(fetch = FetchType.EAGER)
 	private Integer x;
@@ -43,7 +44,7 @@ public class JobPlugin extends Domain {
 	private Set<Connection>		inboundConnections;
 	
 	public JobPlugin() {
-		this.parameters = new LinkedHashMap<String, byte[]>();
+		this.parameters = new LinkedHashMap<String, Serializable>();
 		this.inboundConnections = new HashSet<Connection>();
 		this.outboundConnections= new HashSet<Connection>();
 	}
@@ -80,11 +81,11 @@ public class JobPlugin extends Domain {
 		this.y = y;
 	}
 
-	public Map<String, byte[]> getParameters() {
+	public Map<String, Serializable> getParameters() {
 		return parameters;
 	}
 
-	public void setParameters(Map<String, byte[]> parameters) {
+	public void setParameters(Map<String, Serializable> parameters) {
 		this.parameters = parameters;
 	}
 

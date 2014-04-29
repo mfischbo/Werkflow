@@ -1,6 +1,8 @@
 package de.artignition.werkflow.domain;
 
+import java.io.Serializable;
 import javax.annotation.Generated;
+import javax.persistence.metamodel.MapAttribute;
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
 
@@ -12,6 +14,7 @@ public abstract class PluginInstance_ extends de.artignition.werkflow.domain.Dom
 	public static volatile SingularAttribute<PluginInstance, Integer> stepCount;
 	public static volatile SingularAttribute<PluginInstance, JobInstance> jobInstance;
 	public static volatile SingularAttribute<PluginInstance, PluginExecutionState> state;
+	public static volatile MapAttribute<PluginInstance, String, Serializable> parameters;
 
 }
 
