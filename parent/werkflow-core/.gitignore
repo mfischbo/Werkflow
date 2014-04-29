@@ -1,0 +1,4 @@
+/target
+/bin
+werkflowdb.mv.db
+/activemq-data

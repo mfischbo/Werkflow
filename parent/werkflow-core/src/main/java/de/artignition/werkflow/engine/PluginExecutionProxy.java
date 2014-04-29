@@ -1,5 +1,16 @@
 package de.artignition.werkflow.engine;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Set;
+
 import de.artignition.werkflow.domain.Connection;
 import de.artignition.werkflow.domain.PluginInstance;
 import de.artignition.werkflow.domain.WorkItem;
@@ -8,16 +19,6 @@ import de.artignition.werkflow.plugin.PluginExitStatus;
 import de.artignition.werkflow.plugin.annotation.Input;
 import de.artignition.werkflow.plugin.annotation.Output;
 import de.artignition.werkflow.plugin.annotation.PluginParameter;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Set;
 
 import org.reflections.ReflectionUtils;
 import org.slf4j.Logger;
@@ -108,18 +109,21 @@ class PluginExecutionProxy implements Plugin {
 		for (Field f : parameters) {
 			String key = f.getName();
 			if (instance.getJobPlugin().getParameters().containsKey(key)) {
-				byte[] o = instance.getJobPlugin().getParameters().get(key);
+				//byte[] o = instance.getJobPlugin().getParameters().get(key);
 				try {
+					Serializable s = instance.getJobPlugin().getParameters().get(key);
+					
+				/*	
 					ObjectInputStream oIns = new ObjectInputStream(new ByteArrayInputStream(o));
 					Object object = oIns.readObject();
 					oIns.close();
-					
-					if (f.getType().isAssignableFrom(object.getClass())) {
+				*/	
+					if (f.getType().isAssignableFrom(s.getClass())) {
 						if (!f.isAccessible())
 							f.setAccessible(true);
-						f.set(this.plugin, object);
+						f.set(this.plugin, s);
 					} else {
-						log.error("Unable to assign parameter " + f.getName() + " from object with type : " + object.getClass());
+						log.error("Unable to assign parameter " + f.getName() + " from object with type : " + s.getClass());
 						throw new RuntimeException("Unable to assign parameter");
 					}
 				} catch (Exception ex) {

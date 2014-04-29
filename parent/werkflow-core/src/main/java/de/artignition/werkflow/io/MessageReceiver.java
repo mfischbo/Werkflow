@@ -1,13 +1,14 @@
 package de.artignition.werkflow.io;
 
+import java.io.Serializable;
+
+import de.artignition.werkflow.command.CommandFailedResponse;
 import de.artignition.werkflow.command.EngineCommand;
 import de.artignition.werkflow.command.EngineCommand.Action;
 import de.artignition.werkflow.command.EntityCommand;
 import de.artignition.werkflow.command.Verb;
 import de.artignition.werkflow.dto.PluginDescriptor;
 import de.artignition.werkflow.service.PluginDiscoveryService;
-
-import java.io.Serializable;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -35,6 +36,6 @@ public class MessageReceiver implements ResponsiveObjectMessageDelegate {
 			
 		}
 		
-		return "500 - Failed";
+		return new CommandFailedResponse("Unable to dispatch command of type : " + object.getClass() + ". Details : " + object.toString());
 	}
 }
