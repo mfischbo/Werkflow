@@ -1,8 +1,8 @@
 package de.artignition.werkflow.config;
 
-import de.artignition.werkflow.io.MessageReceiver;
-
 import java.util.Properties;
+
+import de.artignition.werkflow.io.MessageReceiver;
 
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
@@ -30,7 +30,7 @@ import com.zaxxer.hikari.HikariDataSource;
 
 @Configuration
 @ComponentScan(basePackages = "de.artignition.werkflow")
-@EnableJpaRepositories(entityManagerFactoryRef = "werkflowEM")
+@EnableJpaRepositories(entityManagerFactoryRef = "werkflowEM", basePackages = {"de.artignition.werkflow.repository"})
 @EnableTransactionManagement
 public class CoreConfig {
 
