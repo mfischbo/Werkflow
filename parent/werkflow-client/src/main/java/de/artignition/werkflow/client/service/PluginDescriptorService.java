@@ -3,19 +3,14 @@ package de.artignition.werkflow.client.service;
 import de.artignition.werkflow.command.EntityCommand;
 import de.artignition.werkflow.command.Verb;
 import de.artignition.werkflow.dto.PluginDescriptor;
-
-import java.util.UUID;
+import de.artignition.werkflow.messaging.EntityCommandMessageCreator;
 
 import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.Queue;
-import javax.jms.Session;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.core.JmsTemplate;
-import org.springframework.jms.core.MessageCreator;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -29,21 +24,11 @@ public class PluginDescriptorService {
 	private Logger log	= LoggerFactory.getLogger(getClass());
 	
 	public PluginDescriptor[] getAllPlugins() throws JMSException, Exception {
-	
-		jms.send(new MessageCreator() {
 
-			@Override
-			public Message createMessage(Session session) throws JMSException {
-				Queue replyTo = session.createQueue("AdminRequest");
-				
-				EntityCommand cmd = new EntityCommand();
-				cmd.setVerb(Verb.GET);
-				Message m = session.createObjectMessage(cmd);
-				m.setJMSCorrelationID(UUID.randomUUID().toString());
-				m.setJMSReplyTo(replyTo);
-				return m;
-			}
-		});
+		EntityCommand ec = new EntityCommand();
+		ec.setType(PluginDescriptor.class);
+		ec.setVerb(Verb.GET);
+		jms.send(new EntityCommandMessageCreator(ec));
 		
 		jms.setReceiveTimeout(5000L);
 		Object m = jms.receiveAndConvert("AdminRequest");
