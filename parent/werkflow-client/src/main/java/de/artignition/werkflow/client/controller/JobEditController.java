@@ -1,14 +1,26 @@
 package de.artignition.werkflow.client.controller;
 
 import java.net.URL;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.Set;
 
+import de.artignition.fxplumber.event.ConnectionEvent;
+import de.artignition.fxplumber.model.Connector;
 import de.artignition.fxplumber.model.Connector.ConnectorType;
 import de.artignition.fxplumber.model.Graph;
 import de.artignition.fxplumber.model.GraphNode;
+import de.artignition.fxplumber.view.ViewFactory;
 import de.artignition.werkflow.client.component.PluginEntry;
 import de.artignition.werkflow.client.service.EngineService;
+import de.artignition.werkflow.client.service.JobDescriptorService;
 import de.artignition.werkflow.client.service.PluginDescriptorService;
+import de.artignition.werkflow.client.view.WFGraphNodeFactory;
+import de.artignition.werkflow.domain.Connection;
+import de.artignition.werkflow.domain.JobDescriptor;
+import de.artignition.werkflow.domain.JobPlugin;
 import de.artignition.werkflow.dto.ConnectionDescriptor;
 import de.artignition.werkflow.dto.PluginDescriptor;
 
@@ -28,6 +40,7 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 
+import org.joda.time.LocalDateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
@@ -37,6 +50,9 @@ public class JobEditController extends StageController implements
 
 	@Autowired
 	private PluginDescriptorService service;
+	
+	@Autowired
+	private JobDescriptorService	jdService;
 	
 	@Autowired
 	private EngineService			engineService;
@@ -59,15 +75,22 @@ public class JobEditController extends StageController implements
 	private Label lblSelPlgNumOuts;
 	@FXML
 	private Label lblSelPlgTypesOut;
+
 	@FXML
 	private Pane canvas;
 
 	private Graph	graph;
 	
+	private WFGraphNodeFactory gnFactory;
+	
+	private Map<GraphNode, JobPlugin> nodeMapping;
+	private Map<Connector, ConnectionDescriptor> connectorMapping;
+	
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		log.info("Initializing job edit controller");
 
+		
 		try {
 			PluginDescriptor[] plugins = service.getAllPlugins();
 			for (PluginDescriptor p : plugins) {
@@ -86,7 +109,13 @@ public class JobEditController extends StageController implements
 		}
 
 		// initialize fxplumber
-		graph = new Graph(canvas);
+		ViewFactory viewFactory = new ViewFactory();
+		this.gnFactory = new WFGraphNodeFactory();
+		viewFactory.setNodeFactory(this.gnFactory);
+		graph = new Graph(canvas, viewFactory);
+		
+		this.nodeMapping = new HashMap<GraphNode, JobPlugin>();
+		this.connectorMapping = new HashMap<Connector, ConnectionDescriptor>();
 
 		// attach Drop Target handler to canvas
 		this.canvas.setOnDragOver(new EventHandler<DragEvent>() {
@@ -109,15 +138,49 @@ public class JobEditController extends StageController implements
 				log.info("Creating new vworkflow node now with type: " + clazz);
 
 				PluginDescriptor pd = service.getPluginByClassName(clazz);
+				gnFactory.setTitle(pd.getName());
 				GraphNode gn = graph.createNode(event.getX(), event.getY());
 				
-				for (ConnectionDescriptor cd : pd.getInputs())
-					gn.addConnector(ConnectorType.INPUT);
-					
-				for (ConnectionDescriptor cd : pd.getOutputs()) 
-					gn.addConnector(ConnectorType.OUTPUT);
+				for (ConnectionDescriptor cd : pd.getInputs()) {
+					Connector c = gn.addConnector(ConnectorType.INPUT);
+					connectorMapping.put(c, cd);
+				}
+				for (ConnectionDescriptor cd : pd.getOutputs()) {
+					Connector c = gn.addConnector(ConnectorType.OUTPUT);
+					connectorMapping.put(c, cd);
+				}
+				
+				JobPlugin jp = new JobPlugin();
+				jp.setClassname(pd.getClassname());
+				nodeMapping.put(gn, jp);
 			}
 
+		});
+		
+		
+		canvas.addEventHandler(ConnectionEvent.CONNECTION_CREATED, new EventHandler<ConnectionEvent>() {
+			@Override
+			public void handle(ConnectionEvent e) {
+				log.info("Adding new connection for " + e.getConnection());
+				GraphNode source = e.getConnection().getSource().getGraphNode();
+				GraphNode target = e.getConnection().getTarget().getGraphNode();
+				
+				JobPlugin sp = nodeMapping.get(source);
+				JobPlugin tp = nodeMapping.get(target);
+				
+				ConnectionDescriptor sd = connectorMapping.get(e.getConnection().getSource());
+				ConnectionDescriptor td = connectorMapping.get(e.getConnection().getTarget());
+				
+				Connection conn = new Connection();
+				conn.setSource(sp);
+				conn.setTarget(tp);
+				conn.setSourcePort(sd.getNumber());
+				conn.setTargetPort(td.getNumber());
+				sp.getOutboundConnections().add(conn);
+				tp.getInboundConnections().add(conn);
+				
+				
+			}
 		});
 		
 		// set available engines 
@@ -128,6 +191,20 @@ public class JobEditController extends StageController implements
 	
 	public void saveJob() {
 		log.info("Sending job to " + this.engineChoice.getSelectionModel().getSelectedItem());
+		
+		JobDescriptor jd = new JobDescriptor();
+		jd.setName("foo");
+		jd.setDescription("foo description");
+		jd.setDateCreated(LocalDateTime.now());
+		jd.setDateModified(jd.getDateCreated());
+		
+		Set<JobPlugin> plugins = new HashSet<JobPlugin>();
+		for (JobPlugin pd : nodeMapping.values()) {
+			pd.setJobDescriptor(jd);
+			jd.getPlugins().add(pd);
+		}
+		
+		jdService.createJobDescription(jd, this.engineChoice.getSelectionModel().getSelectedItem());
 	}
 	
 	public void cancelEdit() {
