@@ -3,6 +3,9 @@ package de.artignition.werkflow.client.controller;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import de.artignition.fxplumber.model.Connector.ConnectorType;
+import de.artignition.fxplumber.model.Graph;
+import de.artignition.fxplumber.model.GraphNode;
 import de.artignition.werkflow.client.component.PluginEntry;
 import de.artignition.werkflow.client.service.EngineService;
 import de.artignition.werkflow.client.service.PluginDescriptorService;
@@ -56,10 +59,11 @@ public class JobEditController extends StageController implements
 	private Label lblSelPlgNumOuts;
 	@FXML
 	private Label lblSelPlgTypesOut;
-
 	@FXML
 	private Pane canvas;
 
+	private Graph	graph;
+	
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		log.info("Initializing job edit controller");
@@ -82,7 +86,7 @@ public class JobEditController extends StageController implements
 		}
 
 		// initialize fxplumber
-		
+		graph = new Graph(canvas);
 
 		// attach Drop Target handler to canvas
 		this.canvas.setOnDragOver(new EventHandler<DragEvent>() {
@@ -104,7 +108,14 @@ public class JobEditController extends StageController implements
 				String clazz = event.getDragboard().getString();
 				log.info("Creating new vworkflow node now with type: " + clazz);
 
-
+				PluginDescriptor pd = service.getPluginByClassName(clazz);
+				GraphNode gn = graph.createNode(event.getX(), event.getY());
+				
+				for (ConnectionDescriptor cd : pd.getInputs())
+					gn.addConnector(ConnectorType.INPUT);
+					
+				for (ConnectionDescriptor cd : pd.getOutputs()) 
+					gn.addConnector(ConnectorType.OUTPUT);
 			}
 
 		});
