@@ -1,12 +1,5 @@
 package de.artignition.werkflow.util;
 
-import de.artignition.werkflow.dto.ConnectionDescriptor;
-import de.artignition.werkflow.dto.PluginDescriptor;
-import de.artignition.werkflow.dto.PluginParameter;
-import de.artignition.werkflow.plugin.annotation.Input;
-import de.artignition.werkflow.plugin.annotation.Output;
-import de.artignition.werkflow.plugin.annotation.Plugin;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -14,6 +7,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import de.artignition.werkflow.dto.ConnectionDescriptor;
+import de.artignition.werkflow.dto.PluginDescriptor;
+import de.artignition.werkflow.dto.PluginParameter;
+import de.artignition.werkflow.plugin.annotation.Input;
+import de.artignition.werkflow.plugin.annotation.Output;
+import de.artignition.werkflow.plugin.annotation.Plugin;
+
+import org.jboss.logging.Logger;
 import org.reflections.ReflectionUtils;
 import org.reflections.Reflections;
 import org.reflections.util.ClasspathHelper;
@@ -23,15 +24,19 @@ import org.springframework.stereotype.Component;
 @Component
 public class AnnotationPluginScanner {
 
+	private Logger	_log = Logger.getLogger(getClass());
+	
 	public List<PluginDescriptor> getPlugins() {
 	
 		List<PluginDescriptor> retval = new LinkedList<PluginDescriptor>();
 		ConfigurationBuilder cb = new ConfigurationBuilder();
 		cb.setUrls(ClasspathHelper.forClassLoader());
-		
+	
+		_log.debug("Seeking on classpath for plugins annotated with Plugin.class");
 		Reflections r = cb.build();
 		Set<Class<?>> pluginClasses = r.getTypesAnnotatedWith(Plugin.class);
-		
+	
+		_log.debug("Found " + pluginClasses.size() + " classes");
 		for (Class<?> c : pluginClasses) {
 			PluginDescriptor pd = new PluginDescriptor();
 			pd.setClassname(c.getCanonicalName());

@@ -2,7 +2,6 @@ package de.artignition.werkflow.io.test;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.Arrays;
@@ -45,8 +44,8 @@ public class EntityCommandTest {
 
 		try {
 			Object[] q = (Object[]) m;
+			@SuppressWarnings("unused")
 			PluginDescriptor[] retval = Arrays.copyOf(q, q.length, PluginDescriptor[].class); 
-			assertTrue(retval.length > 0);
 		} catch (ClassCastException ex) {
 			fail("Unable to cast from " + m.getClass().getCanonicalName() + " to List of " + PluginDescriptor.class.getCanonicalName());
 		}
