@@ -1,7 +1,7 @@
 package de.artignition.werkflow.domain;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
@@ -31,10 +31,10 @@ public class JobDescriptor extends Domain {
 	private LocalDateTime dateModified;
 	
 	@OneToMany(mappedBy = "jobDescriptor", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-	private List<JobPlugin>	plugins;
+	private Set<JobPlugin>	plugins;
 	
 	public JobDescriptor() {
-		this.plugins = new LinkedList<JobPlugin>();
+		this.plugins = new HashSet<JobPlugin>();
 	}
 	
 	public String getName() {
@@ -61,10 +61,10 @@ public class JobDescriptor extends Domain {
 	public void setDateModified(LocalDateTime dateModified) {
 		this.dateModified = dateModified;
 	}
-	public List<JobPlugin> getPlugins() {
+	public Set<JobPlugin> getPlugins() {
 		return plugins;
 	}
-	public void setPlugins(List<JobPlugin> plugins) {
+	public void setPlugins(Set<JobPlugin> plugins) {
 		this.plugins = plugins;
 	}
 }

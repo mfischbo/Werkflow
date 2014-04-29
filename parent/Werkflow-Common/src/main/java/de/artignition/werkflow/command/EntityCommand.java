@@ -9,6 +9,7 @@ public class EntityCommand implements Serializable {
 	private UUID					id;
 	private Class<?>				type;
 	private Verb					verb;
+	private Object					payload;
 	
 	public EntityCommand() {
 		
@@ -36,5 +37,13 @@ public class EntityCommand implements Serializable {
 
 	public void setVerb(Verb verb) {
 		this.verb = verb;
+	}
+
+	public Object getPayload() {
+		return payload;
+	}
+
+	public void setPayload(Object payload) {
+		this.payload = payload;
 	}
 }
