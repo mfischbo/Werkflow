@@ -1,18 +1,13 @@
 package de.artignition.werkflow.client.controller;
 
+import java.net.URL;
+import java.util.ResourceBundle;
+
 import de.artignition.werkflow.client.component.PluginEntry;
 import de.artignition.werkflow.client.service.EngineService;
 import de.artignition.werkflow.client.service.PluginDescriptorService;
 import de.artignition.werkflow.dto.ConnectionDescriptor;
 import de.artignition.werkflow.dto.PluginDescriptor;
-
-import eu.mihosoft.vrl.workflow.FlowFactory;
-import eu.mihosoft.vrl.workflow.VFlow;
-import eu.mihosoft.vrl.workflow.VNode;
-import eu.mihosoft.vrl.workflow.fx.FXSkinFactory;
-
-import java.net.URL;
-import java.util.ResourceBundle;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -65,8 +60,6 @@ public class JobEditController extends StageController implements
 	@FXML
 	private Pane canvas;
 
-	private VFlow vFlow;
-
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		log.info("Initializing job edit controller");
@@ -88,9 +81,8 @@ public class JobEditController extends StageController implements
 					+ ex.getMessage());
 		}
 
-		// initialize VFlow engine
-		this.vFlow = FlowFactory.newFlow(new FXSkinFactory(this.canvas));
-		this.vFlow.setVisible(true);
+		// initialize fxplumber
+		
 
 		// attach Drop Target handler to canvas
 		this.canvas.setOnDragOver(new EventHandler<DragEvent>() {
@@ -112,21 +104,7 @@ public class JobEditController extends StageController implements
 				String clazz = event.getDragboard().getString();
 				log.info("Creating new vworkflow node now with type: " + clazz);
 
-				VNode node = vFlow.newNode();
-				node.setX(event.getX());
-				node.setY(event.getY());
-				
 
-				// get the plugin descriptor and set inputs / outputs
-				PluginDescriptor pd = service.getPluginByClassName(clazz);
-				for (ConnectionDescriptor cd : pd.getInputs()) {
-					node.addInput(cd.getType());
-				}
-
-				for (ConnectionDescriptor cd : pd.getOutputs())
-					node.addOutput(cd.getType());
-				node.setTitle(pd.getName());
-				event.consume();
 			}
 
 		});

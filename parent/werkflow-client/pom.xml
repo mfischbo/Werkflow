@@ -61,16 +61,6 @@
 			<scope>system</scope>
 		</dependency>
 		<dependency>
-			<groupId>eu.mihosoft.vrl.workflow</groupId>
-			<artifactId>vworkflows-core</artifactId>
-			<version>0.1-r2-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>eu.mihosoft.vrl.workflow</groupId>
-			<artifactId>vworkflows-fx</artifactId>
-			<version>0.1-r2-SNAPSHOT</version>
-		</dependency>
-		<dependency>
 			<groupId>de.artignition.werkflow</groupId>
 			<artifactId>Werkflow-Common</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
