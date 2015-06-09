@@ -1,151 +1,139 @@
 package de.artignition.werkflow.engine;
 
+import java.util.List;
+
 import de.artignition.werkflow.domain.Connection;
+import de.artignition.werkflow.domain.JobPlugin;
 import de.artignition.werkflow.domain.PluginExecutionState;
 import de.artignition.werkflow.domain.PluginInstance;
 import de.artignition.werkflow.domain.WorkItem;
 import de.artignition.werkflow.plugin.PluginExitStatus;
 import de.artignition.werkflow.plugin.PluginExitStatus.Status;
-import de.artignition.werkflow.repository.PluginInstanceRepository;
 
-import java.util.ArrayList;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentMap;
+public class PluginExecutor implements Runnable {
 
-class PluginExecutor implements Runnable {
-
-	private PluginInstanceRepository piRepo;
-	
 	private PluginInstance 			instance;
-
-	private WorkItemRouter 			router;
-	
 	private PluginExecutionProxy	proxy;
+	private boolean					isExecuting;
+
+	private JobPlugin				plugin;
+	private List<PluginTuple>		predecessors;
 	
-	private ConcurrentMap<UUID, PluginExecutionState>	stateMap;
-
-	PluginExecutor(PluginInstance instance, WorkItemRouter router, PluginExecutionProxy proxy, PluginInstanceRepository piRepo) throws Exception {
-		this.piRepo = piRepo;
-		this.instance = instance;
-		this.router = router;
-		this.proxy = proxy;
-		this.proxy.initializePlugin();
-	}
 	
-	void setPluginStateMap(ConcurrentMap<UUID, PluginExecutionState> stateMap) {
-		this.stateMap = stateMap;
-	}
-
-	@Override
-	public void run() {
+	public PluginExecutor(PluginTuple tuple, List<PluginTuple> prev) {
 		
-		// initialize the router
-		// NOTE: It's important that it's called that late, since the whole JobInstance must be available
-		// in the database when initializing the router
-		router.initialize();
-
-		// execute the beforeExecution call.
-		this.proxy.beforeExecution();
-
-		while (true) {
-			int result = getStateResult();
-			if (result == -1) {
-				// one of the predecessors failed. Fail too!
-				instance.setState(PluginExecutionState.FAILED);
-				createSavePoint();
-				return;
-			}
-			
-			if (result == 1) {
-				// plugin execution is succceeded
-				instance.setState(PluginExecutionState.SUCCEEDED);
-				createSavePoint();
-				return;
-			}
-		
-			if (result == 4) {
-				// plugins without inbound connections execute without WorkItems 
-				executeStep(new WorkItem[0]);
-			}
-			
-			if (result == 0 && !router.hasItemOfWork()) {
-				// last item of work done. State has been saved by executeStep
-				return;
-			}
-		
-			if (result == 0 && router.hasItemOfWork()) {
-				executeStep(router.getItemOfWork());
-			}
-			
-			try {
-				Thread.sleep(500L);
-				Thread.yield();
-			} catch (Exception ex) {
-				
-			}
-		}
-	}
-
-	private void executeStep(WorkItem[] items) {
+		this.plugin 		= tuple.getPlugin();
+		this.instance		= tuple.getInstance();
+		this.predecessors	= prev;
 		
 		try {
-			this.proxy.setInputs(items);
+			Class<?> x = Class.forName(plugin.getClassname());
+			this.proxy    = new PluginExecutionProxy(x, instance.getParameters());
 		} catch (Exception ex) {
-			throw new RuntimeException("Failed to set the plugins inputs. Cause: " + ex.getMessage());
+			throw new RuntimeException("Unable to initialize plugin executor. Cause: " + ex.getMessage());
 		}
-
-		proxy.beforeWorkItemProcessing();
-
-		instance.setState(PluginExecutionState.PROCESSING);
-		createSavePoint();
-
-		PluginExitStatus status = proxy.execute();
+	}
 	
-		proxy.afterWorkItemProcessing();
-		if (status.getExitStatus() == Status.SUCCESS || status.getExitStatus() == Status.IDLE) 
-			router.routeOutput(proxy.getOutput());
+	@Override
+	public void run() {
+		this.isExecuting = true;
 		
-		instance.setStepCount(instance.getStepCount() + 1);
+		instance.setState(PluginExecutionState.IDLE);
+		this.proxy.beforeExecution();
+	
+		boolean isInputLoaded = false;
+		
+		while (isExecuting) {
+
+			// check predecessor plugins
+			isPredecessorWorking();
 			
+			// load inputs
+			if (predecessors.size() != 0) 
+				isInputLoaded = loadInputs();
+		
+			// do the work
+			if (isInputLoaded || predecessors.size() == 0) {
+				proxy.beforeWorkItemProcessing();
+				PluginExitStatus status = proxy.execute();
+				proxy.afterExecution();
+				routeOutputs();
+				setInstanceState(status);
+				instance.setStepCount(instance.getStepCount() + 1);
+			}
+			
+			// check if we're donw
+			if (instance.getState() == PluginExecutionState.SUCCEEDED)
+				isExecuting = false;
+			if (instance.getState() == PluginExecutionState.FAILED)
+				isExecuting = false;
+		
+			// route outputs
+			Thread.yield();
+			
+			// check if predecessor has finished
+			for (PluginTuple t : predecessors) {
+				if (t.getInstance().getState() == PluginExecutionState.SUCCEEDED) {
+					// check if there is more work in the queue
+					if (!instance.hasItemsInInQueue()) {
+						instance.setState(PluginExecutionState.SUCCEEDED);
+						this.isExecuting = false;
+					}
+				}
+			}
+		}
+		this.proxy.afterExecution();
+	}
+
+	private void setInstanceState(PluginExitStatus status) {
 		if (status.getExitStatus() == Status.SUCCESS)
 			instance.setState(PluginExecutionState.SUCCEEDED);
-		if (status.getExitStatus() == Status.IDLE)
-			instance.setState(PluginExecutionState.IDLE);
 		if (status.getExitStatus() == Status.FAILED)
 			instance.setState(PluginExecutionState.FAILED);
-		createSavePoint();
+		if (status.getExitStatus() == Status.IDLE)
+			instance.setState(PluginExecutionState.IDLE);
 	}
 	
 	
-	private int getStateResult() {
+	private boolean loadInputs() {
 	
-		// check the plugins own state
-		if (instance.getState() == PluginExecutionState.FAILED)
-			return -1;
-		if (instance.getState() == PluginExecutionState.SUCCEEDED)
-			return 1;
-		
-		// input plugins return special number 4 when not failed or succeeded
-		if (instance.getJobPlugin().getInboundConnections().size() == 0)
-			return 4;
-			
-		// check predecessor states
-		Set<Connection> inbounds = instance.getJobPlugin().getInboundConnections();
-		ArrayList<PluginExecutionState> current = new ArrayList<PluginExecutionState>(inbounds.size());
-		for (Connection c : inbounds) {
-			UUID sourcePlugin = c.getSource().getId();
-			current.add(this.stateMap.get(sourcePlugin));
+		boolean isFullyLoaded = true;
+		for (int i : proxy.getInputPorts()) {
+			WorkItem x = instance.pollItem(i);
+			if (x != null) {
+				try {
+					proxy.setInput(x, i);
+				} catch (Exception ex) {
+					throw new RuntimeException("Unable to assign work item to port");
+				}
+			} else
+				isFullyLoaded = false;
 		}
-		
-		if (current.contains(PluginExecutionState.FAILED))
-			return -1;
-		return 0;
+		return isFullyLoaded;
 	}
-
 	
-	private void createSavePoint() {
-		this.stateMap.put(this.instance.getJobPlugin().getId(), this.instance.getState());
-		piRepo.saveAndFlush(instance);
+	
+	private void routeOutputs() {
+		
+		for (Connection c : plugin.getConnections()) {
+			try {
+				WorkItem x = proxy.getOutput(c.getSourcePort());
+				instance.getOutqueueByPort(c.getSourcePort()).add(x);
+			} catch (Exception ex) {
+				throw new RuntimeException("Unable to route Output");
+			}
+		}
+	}
+	
+	
+	private void isPredecessorWorking() throws RuntimeException {
+		
+		// check if each predecessor is either on SUCCESS or IDLE or FINISHED
+		for (PluginTuple t : predecessors) {
+			if (t.getInstance().getState() == PluginExecutionState.FAILED) {
+				instance.setState(PluginExecutionState.FAILED);
+				throw new RuntimeException("Failed Plugin due to predecessor failing");
+			}
+		}
 	}
 }

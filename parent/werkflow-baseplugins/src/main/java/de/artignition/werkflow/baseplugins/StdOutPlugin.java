@@ -1,34 +1,25 @@
 package de.artignition.werkflow.baseplugins;
 
-import de.artignition.werkflow.plugin.ExitSuccess;
+import de.artignition.werkflow.plugin.ExitIdle;
 import de.artignition.werkflow.plugin.Plugin;
 import de.artignition.werkflow.plugin.PluginExitStatus;
 import de.artignition.werkflow.plugin.annotation.Input;
 import de.artignition.werkflow.plugin.annotation.Output;
 import de.artignition.werkflow.plugin.annotation.PluginInfo;
-import de.artignition.werkflow.plugin.annotation.PluginParameter;
 
-@PluginInfo(name = "Upper Case Plugin", description = "Uppercases a string")
-public class StringToUpperCasePlugin implements Plugin {
+@PluginInfo(name = "Standard Output Plugin", description = "Writes stuff to stdout")
+public class StdOutPlugin implements Plugin {
 
 	@Input(number=0)
-	private String	stringToBeUppercased;
-
+	private String string;
+	
 	@Output(number=0)
-	private String	output;
-	
-	@PluginParameter(name = "Username", description = "The username for the FTP Connection")
-	private String		username;
-	
+	private String output;
 	
 	public PluginExitStatus execute() {
-		//this.output = this.stringToBeUppercased.toUpperCase();
-
-		this.output = "HELL YEAH!";
-		//return new ExitIdle();
-		return new ExitSuccess();
+		System.out.println(string);
+		return new ExitIdle();
 	}
-
 
 	@Override
 	public void beforeExecution() {
@@ -36,13 +27,11 @@ public class StringToUpperCasePlugin implements Plugin {
 		
 	}
 
-
 	@Override
 	public void afterExecution() {
 		// TODO Auto-generated method stub
 		
 	}
-
 
 	@Override
 	public void beforeWorkItemProcessing() {
@@ -50,11 +39,9 @@ public class StringToUpperCasePlugin implements Plugin {
 		
 	}
 
-
 	@Override
 	public void afterWorkItemProcessing() {
 		// TODO Auto-generated method stub
 		
 	}
-	
 }

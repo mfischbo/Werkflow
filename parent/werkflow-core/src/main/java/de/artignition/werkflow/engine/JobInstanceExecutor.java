@@ -1,21 +1,19 @@
 package de.artignition.werkflow.engine;
 
-import de.artignition.werkflow.domain.JobDescriptor;
-import de.artignition.werkflow.domain.JobInstance;
-import de.artignition.werkflow.domain.JobPlugin;
-import de.artignition.werkflow.domain.PluginExecutionState;
-import de.artignition.werkflow.domain.PluginInstance;
-import de.artignition.werkflow.repository.JobInstanceRepository;
-
 import java.util.ArrayList;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
-import org.joda.time.LocalDateTime;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationContext;
+
+import de.artignition.werkflow.domain.JobDescriptor;
+import de.artignition.werkflow.domain.JobInstance;
+import de.artignition.werkflow.domain.PluginInstance;
+import de.artignition.werkflow.domain.WorkItem;
 
 
 /**
@@ -26,74 +24,78 @@ import org.springframework.context.ApplicationContext;
  *
  */
 public class JobInstanceExecutor {
-	
-	private ApplicationContext					ctx;
+
 	private JobInstance							instance;
 	private ThreadGroup							threadGroup;
 	private Thread[]							threads;
 	private boolean								initialized;
-	private ConcurrentMap<UUID, PluginExecutionState>		stateMap;
 	
 	private Logger log = LoggerFactory.getLogger(getClass());
 	
-	private	JobInstanceRepository	jobInstanceRepo;
-	
-	JobInstanceExecutor(ApplicationContext ctx, JobInstanceRepository repo) {
-		this.ctx = ctx;
-		this.jobInstanceRepo = repo;
-		this.stateMap = new ConcurrentHashMap<UUID, PluginExecutionState>();
+	public JobInstanceExecutor(JobDescriptor descriptor) {
+		initialize(descriptor);
 	}
 	
-	void initialize(JobDescriptor descriptor) {
+	private void initialize(JobDescriptor descriptor) {
 
 		// create the instance for persistence
 		instance = new JobInstance();
-		instance.setDateCreated(LocalDateTime.now());
-		instance.setDescriptor(descriptor);
-		instance.setPluginInstances(new ArrayList<PluginInstance>(descriptor.getPlugins().size()));
-		
-		for (JobPlugin jp : descriptor.getPlugins()) {
-			PluginInstance pi = new PluginInstance();
-			pi.setJobInstance(instance);
-			pi.setJobPlugin(jp);
-			pi.setStepCount(0);
-			pi.setState(PluginExecutionState.IDLE);
-			pi.setParameters(jp.getParameters());
-			instance.getPluginInstances().add(pi);
-			this.stateMap.put(jp.getId(), PluginExecutionState.IDLE);
-		}
+		instance.setDateCreated(DateTime.now());
+		instance.setDescriptorId(descriptor.getId());
+		instance.setPluginInstances(new HashSet<PluginInstance>(descriptor.getPlugins().size()));
 
-		// persist the jobInstance
-		this.instance = jobInstanceRepo.saveAndFlush(this.instance);
-		
+		List<PluginTuple> tuples = new ArrayList<>(descriptor.getPlugins().size());
+		descriptor.getPlugins().forEach(p -> {
+			PluginInstance pi = new PluginInstance(p);
+			instance.getPluginInstances().add(pi);
+			PluginTuple pt = new PluginTuple(p, pi);
+			tuples.add(pt);
+		});
+	
 		// create a thread group and threads for each plugin
 		threadGroup = new ThreadGroup("TG_" + instance.getId());
-		this.threads = new Thread[instance.getPluginInstances().size()];
-		int k=0;
+		threads = new Thread[instance.getPluginInstances().size()];
+
+		int k = 0;
 		for (PluginInstance i : instance.getPluginInstances()) {
+		
+			// find the plugin tuple for the executors instance
+			PluginTuple xi = tuples.stream().filter(t -> t.getInstance().equals(i)).findFirst().orElse(null);
+			
+			// find all preceeding tuples
+			List<PluginTuple> predecessors = new LinkedList<>();
+			tuples.forEach(t -> {
+				t.getPlugin().getConnections().forEach(c -> {
+					if (c.getTargetPluginId().equals(xi.getPlugin().getId())) {
+						ConcurrentLinkedQueue<WorkItem> outQueue = t.getInstance().getOutqueueByPort(c.getSourcePort());
+						if (outQueue != null) 
+							xi.getInstance().setInQueue(c.getTargetPort(), outQueue);
+						predecessors.add(t);
+					}
+				});
+			});
+			
 			try {
-				PluginExecutor executor = PluginInstanceExecutorFactory.newInstance(ctx, i);
-				executor.setPluginStateMap(this.stateMap);
-				Thread t = new Thread(threadGroup, executor, "PI-" + i.getId());
-				this.threads[k] = t;
+				PluginExecutor exec = new PluginExecutor(xi, predecessors);
+				Thread t = new Thread(threadGroup, exec, "PI-" + i.getId());
+				threads[k] = t;
 				k++;
 			} catch (Exception ex) {
-				log.error("Unable to create PluginInstance " + i.getJobPlugin().getClassname() + ". Cause: " + ex.getMessage());
+				log.error("Unable to create PluginInstance " + xi.getPlugin().getClassname() + ". Cause: " + ex.getMessage());
 			}
 		}
 		this.initialized = true;
 	}
-	
-	
+
+
 	public void startJob() {
 		if (!initialized) 
 			throw new IllegalStateException("Can not start Job. Executor is not initialized!");
 		
 		for (Thread t : threads) {
-			t.run();
+			t.start();
 		}
 		
-		instance.setDateStarted(LocalDateTime.now());
-		this.instance = jobInstanceRepo.saveAndFlush(instance);
+		instance.setDateStarted(DateTime.now());
 	}
 }
