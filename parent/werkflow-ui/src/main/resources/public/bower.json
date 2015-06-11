@@ -6,6 +6,7 @@
     "angular-route": "=1.4.0",
     "bootstrap": "latest",
     "angular-bootstrap": ">=0.12.1",
-    "fontawesome": "latest"
+    "fontawesome": "latest",
+    "angular-native-dragdrop" : "latest"
   }
 }

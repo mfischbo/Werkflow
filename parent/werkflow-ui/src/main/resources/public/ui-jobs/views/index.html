@@ -9,7 +9,10 @@
 						<h5>{{j.name}}</h5>	
 					</div>	
 					<div class="col-md-6">
-						<button data-ng-click="createInstance(j)" class="btn btn-sm pull-right"><span class="fa fa-play"></span></button>
+						<div class="pull-right">
+							<a href="#/jobs/{{j.id}}/edit" class="btn btn-sm"><span class="fa fa-pencil"></span></a>						
+							<button data-ng-click="createInstance(j)" class="btn btn-sm pull-right"><span class="fa fa-play"></span></button>
+						</div>
 					</div>
 				</div>
 			</div>
