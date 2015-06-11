@@ -38,6 +38,12 @@ WFApp.jobs.service("JobService", ["$q", "$http", function($q, $http) {
 		deleteJob : function(job) {
 			return $http.delete('/api/jobs/' + job.id).then(function(resonse) {
 			});
+		},
+		
+		createInstance : function(job) {
+			return $http.post('/api/jobs/'+job.id+'/instance').then(function(response) {
+				return response.data;
+			})
 		}
 	};
 }]);
@@ -46,5 +52,9 @@ WFApp.jobs.controller("JobIndexController", ['$scope', 'JobService', function($s
 	JobService.getAllJobs().then(function(jobs) {
 		$scope.jobs = jobs;
 	});
+	
+	$scope.createInstance = function(job) {
+		JobService.createInstance(job);
+	}
 }]);
 

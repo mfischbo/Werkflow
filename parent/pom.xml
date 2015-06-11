@@ -9,7 +9,6 @@
   <modules>
   	<module>werkflow-core</module>
   	<module>werkflow-api</module>
-  	<module>werkflow-client</module>
   	<module>werkflow-baseplugins</module>
   	<module>werkflow-ui</module>
   </modules>
