@@ -5,21 +5,53 @@
 		
 		<link rel="stylesheet" href="./bower_components/bootstrap/dist/css/bootstrap.min.css">
 		<link rel="stylesheet" href="./bower_components/fontawesome/css/font-awesome.min.css">
+		<link href='http://fonts.googleapis.com/css?family=Ubuntu' rel='stylesheet' type='text/css'>	
+		<link rel="stylesheet" href="./resources/css/style.css">
 	</head>
 	
 	<body>
-		<div data-ng-controller="CoreController">
-			<div data-ng-repeat="j in jobs">
-				{{j.id}}
-			</div>	
+	<nav class="navbar navbar-default sidebar">
+				<div class="container-fluid">
+					<ul class="nav navbar-nav" style="width:200px;">
+						<li><div style="font-size:20px; padding:12px">Werkflow</div>
+						<li><a href="#/home">Home<span style="font-size:20px;" class="pull-right hidden-xs fa fa-home"></span></a>
+						<li><a href="#/jobs">Jobs <span style="font-size:20px;" class="pull-right hidden-xs fa fa-gears"></span></a>
+						<li><a href="#/plugins">Plugins <span style="font-size:20px;" class="pull-right hidden-xs fa fa-puzzle-piece"></span></a>
+					</ul>	
+				</div>
+				</nav>
+
+		<div class="row">
+			<div class="col-md-9">
+				<div data-ng-view></div>
+			</div>
 		</div>
-	
-		<script src="./bower_components/angular/angular.js"></script>	
+				
+		
+		<script src="./bower_components/jquery/dist/jquery.min.js"></script>	
+		<script src="./bower_components/angular/angular.min.js"></script>	
+		<script src="./bower_components/angular-route/angular-route.min.js"></script>
 		
 		<script>
-			var WFApp = angular.module("WFApp", ["CoreModule"]);
+			var WFApp = {};
+			$(document).ready(function() {
+				$('.nav a').on('click', function() {
+					$('.nav').find('.active').removeClass('active');
+					$(this).parent().addClass('active');
+				});
+				
+				// set the current active state
+				var x = window.location.href;
+				x = x.substring(x.indexOf('#'));
+				$('.nav').find('[href="'+x+'"]').parent().addClass('active');
+			});
 		</script>
 
 		<script src="./ui-core/ui-core.js"></script>
+		<script src="./ui-jobs/ui-jobs.js"></script>
+	
+		<script>
+			WFApp = angular.module("WFApp", ["CoreModule", "JobModule"]);
+		</script>	
 	</body>
 </html>
