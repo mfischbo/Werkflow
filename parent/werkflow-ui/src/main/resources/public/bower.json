@@ -1,0 +1,11 @@
+{
+  "name": "Werkflow-UI",
+  "version": "1.0",
+  "dependencies": {
+    "angular": "=1.4.0",
+    "angular-route": "=1.4.0",
+    "bootstrap": "latest",
+    "angular-bootstrap": ">=0.12.1",
+    "fontawesome": "latest"
+  }
+}

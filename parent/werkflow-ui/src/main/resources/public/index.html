@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html data-ng-app="WFApp">
+	<head>
+		<title>Werkflow UI</title>
+		
+		<link rel="stylesheet" href="./bower_components/bootstrap/dist/css/bootstrap.min.css">
+		<link rel="stylesheet" href="./bower_components/fontawesome/css/font-awesome.min.css">
+	</head>
+	
+	<body>
+		<div data-ng-controller="CoreController">
+			<div data-ng-repeat="j in jobs">
+				{{j.id}}
+			</div>	
+		</div>
+	
+		<script src="./bower_components/angular/angular.js"></script>	
+		
+		<script>
+			var WFApp = angular.module("WFApp", ["CoreModule"]);
+		</script>
+
+		<script src="./ui-core/ui-core.js"></script>
+	</body>
+</html>

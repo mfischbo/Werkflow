@@ -4,24 +4,21 @@ import java.util.Set;
 
 import org.bson.types.ObjectId;
 import org.joda.time.DateTime;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.DBRef;
-import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document(collection = "Werkflow_JobInstance")
 public class JobInstance {
 
-	@Id
 	private ObjectId	  			id;
 	private DateTime 				dateCreated;
 	private DateTime 				dateStarted;
 	private DateTime 				dateFinished;
-	
-	@DBRef
-	private Set<PluginInstance>	pluginInstances;
-	
+	private Set<PluginInstance>		pluginInstances;
 	private ObjectId	 			descriptorId;
 	
+	public JobInstance() {
+		this.id = new ObjectId();
+	}
+	
+
 	public ObjectId getId() {
 		return id;
 	}

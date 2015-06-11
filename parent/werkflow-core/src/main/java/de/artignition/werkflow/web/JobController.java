@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.artignition.werkflow.domain.JobDescriptor;
+import de.artignition.werkflow.domain.JobInstance;
 import de.artignition.werkflow.service.JobDescriptorService;
 
 @RestController
@@ -30,13 +31,7 @@ public class JobController {
 	public JobDescriptor getJobById(@PathVariable("id") ObjectId id) {
 		return service.getJobDescriptorById(id);
 	}
-	
-	@RequestMapping(value = "/{id}/instance", method = RequestMethod.POST) 
-	public void createJobInstance(@PathVariable("id") ObjectId id) {
-		JobDescriptor jd = service.getJobDescriptorById(id);
-		service.createJobInstance(jd);
-	}
-	
+
 	@RequestMapping(value = "", method = RequestMethod.POST)
 	public JobDescriptor createJob(@RequestBody JobDescriptor job) {
 		return service.createJobDescriptor(job);
@@ -51,5 +46,11 @@ public class JobController {
 	public void deleteJob(@PathVariable("id") ObjectId id) {
 		JobDescriptor jd = service.getJobDescriptorById(id);
 		service.deleteJobDescriptor(jd);
+	}
+	
+	@RequestMapping(value = "/{id}/instance", method = RequestMethod.POST) 
+	public JobInstance createJobInstance(@PathVariable("id") ObjectId id) {
+		JobDescriptor jd = service.getJobDescriptorById(id);
+		return service.createJobInstance(jd);
 	}
 }

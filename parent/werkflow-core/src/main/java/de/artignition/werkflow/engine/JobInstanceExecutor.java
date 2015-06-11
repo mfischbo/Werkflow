@@ -98,4 +98,8 @@ public class JobInstanceExecutor {
 		
 		instance.setDateStarted(DateTime.now());
 	}
+	
+	public JobInstance getWrappedInstance() {
+		return this.instance;
+	}
 }
