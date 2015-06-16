@@ -1,4 +1,4 @@
-package de.artignition.werkflow.dto;
+package de.artignition.werkflow.domain;
 
 import java.io.Serializable;
 

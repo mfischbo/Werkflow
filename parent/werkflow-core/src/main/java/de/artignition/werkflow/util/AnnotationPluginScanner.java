@@ -15,9 +15,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import de.artignition.werkflow.dto.ConnectionDescriptor;
-import de.artignition.werkflow.dto.PluginDescriptor;
-import de.artignition.werkflow.dto.PluginParameter;
+import de.artignition.werkflow.domain.ConnectionDescriptor;
+import de.artignition.werkflow.domain.PluginDescriptor;
+import de.artignition.werkflow.domain.PluginParameter;
 import de.artignition.werkflow.plugin.annotation.Input;
 import de.artignition.werkflow.plugin.annotation.Output;
 import de.artignition.werkflow.plugin.annotation.PluginInfo;
@@ -25,11 +25,12 @@ import de.artignition.werkflow.plugin.annotation.PluginInfo;
 @Component
 public class AnnotationPluginScanner {
 
+	private List<PluginDescriptor> _plugins;
+	
 	private Logger	_log = LoggerFactory.getLogger(getClass());
-	
-	public List<PluginDescriptor> getPlugins() {
-	
-		List<PluginDescriptor> retval = new LinkedList<PluginDescriptor>();
+
+	public AnnotationPluginScanner() {
+		_plugins = new LinkedList<>();
 		ConfigurationBuilder cb = new ConfigurationBuilder();
 		cb.setUrls(ClasspathHelper.forClassLoader());
 	
@@ -51,9 +52,20 @@ public class AnnotationPluginScanner {
 			pd.setInputs(getConnectionDescriptors(c, Input.class));
 			pd.setOutputs(getConnectionDescriptors(c, Output.class));
 			pd.setParams(getPluginParameters(c));
-			retval.add(pd);
+			_plugins.add(pd);
 		}
-		return retval;
+	}
+	
+	public List<PluginDescriptor> getPlugins() {
+		return _plugins;
+	}
+	
+	public PluginDescriptor getByClassname(String classname) {
+		for (PluginDescriptor p : _plugins) {
+			if (p.getClassname().equals(classname))
+				return p;
+		}
+		return null;
 	}
 	
 	

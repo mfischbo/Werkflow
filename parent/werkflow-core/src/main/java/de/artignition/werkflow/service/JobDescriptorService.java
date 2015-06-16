@@ -14,14 +14,19 @@ import org.springframework.stereotype.Service;
 
 import de.artignition.werkflow.domain.JobDescriptor;
 import de.artignition.werkflow.domain.JobInstance;
+import de.artignition.werkflow.domain.PluginDescriptor;
 import de.artignition.werkflow.engine.JobInstanceExecutor;
 import de.artignition.werkflow.repo.JobDescriptorRepo;
+import de.artignition.werkflow.util.AnnotationPluginScanner;
 
 @Service
 public class JobDescriptorService {
 
 	@Autowired
 	private JobDescriptorRepo		jobRepo;
+	
+	@Autowired
+	private AnnotationPluginScanner			scanner;
 	
 	private Map<ObjectId, JobInstance>		jobInstanceRepo;
 
@@ -35,7 +40,14 @@ public class JobDescriptorService {
 	}
 	
 	public JobDescriptor getJobDescriptorById(ObjectId id) {
-		return jobRepo.findOne(id);
+		JobDescriptor retval = jobRepo.findOne(id);
+		retval.getPlugins().forEach(p -> {
+			PluginDescriptor pd = scanner.getByClassname(p.getClassname());
+			if (pd != null) {
+				p.setDescriptor(pd);
+			}
+		});
+		return retval;
 	}
 	
 	public JobDescriptor createJobDescriptor(JobDescriptor jd) {

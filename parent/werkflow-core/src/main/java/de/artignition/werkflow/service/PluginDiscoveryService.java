@@ -6,7 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import de.artignition.werkflow.dto.PluginDescriptor;
+import de.artignition.werkflow.domain.PluginDescriptor;
 import de.artignition.werkflow.util.AnnotationPluginScanner;
 
 @Service

@@ -1,7 +1,13 @@
-<div data-ui-on-drop="dropElement($event, $data)" style="border:1px solid red; width:100%;height:100vh;">
+<div class="drop-container" data-ng-click="addEvent($event)" droppable style="outline:1px solid red; width:100%;height:100vh;">
 
-<span data-ui-draggable="true" data-drag="p" data-ng-repeat="p in job.plugins" style="position:absolute;left:{{p.x}}px;top:{{p.y}}px;">
-	{{p.classname}}
-</span>
+	<plug-in data-ng-repeat="p in job.plugins" draggable class="plumb-item" id="{{p.id}}" ng-style="{'top':{{p.y}}, 'left':{{p.x}}}">
+		{{p.descriptor.name}}
+		<plug-input data-ng-repeat="i in p.descriptor.inputs" data-port="{{::i.number}}" data-type="{{::i.type}}"></plug-input>	
+		<plug-output data-ng-repeat="o in p.descriptor.outputs" data-port="{{::o.number}}" data-type="{{::o.port}}"></plug-output>
+	</plug-in>
 
+
+	<connections data-ng-repeat="p in job.plugins">
+		<connection data-ng-repeat="c in p.connections" data-from="{{p.id}}" data-to="{{c.targetPluginId}}" data-source-port="{{c.sourcePort}}" data-target-port="{{c.targetPort}}"></connection>
+	</connections>
 </div>

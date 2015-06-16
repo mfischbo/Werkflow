@@ -120,3 +120,17 @@ body,html{
 h1, h2, h3, h4, h5, h6 {
 	font-family:Ubuntu;
 }
+
+.plumb-item {
+	 border:1px solid #aaa; 
+	 width:100px;
+	 height:100px;
+	 position: absolute;
+	 cursor: move;
+}
+
+.anchor.output {
+	width:10px;
+	height:10px;
+	background-color:green;
+}

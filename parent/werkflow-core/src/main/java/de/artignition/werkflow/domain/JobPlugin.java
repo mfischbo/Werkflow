@@ -16,6 +16,7 @@ public class JobPlugin {
 	private Integer 			x;
 	private Integer 			y;
 	private Set<Connection>		connections;
+	private PluginDescriptor	descriptor;
 	
 	public JobPlugin() {
 		this.id = new ObjectId();
@@ -69,5 +70,13 @@ public class JobPlugin {
 
 	public void setConnections(Set<Connection> connections) {
 		this.connections = connections;
+	}
+
+	public PluginDescriptor getDescriptor() {
+		return descriptor;
+	}
+
+	public void setDescriptor(PluginDescriptor descriptor) {
+		this.descriptor = descriptor;
 	}
 }

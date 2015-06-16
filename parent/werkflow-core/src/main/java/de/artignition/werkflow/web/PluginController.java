@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import de.artignition.werkflow.dto.PluginDescriptor;
+import de.artignition.werkflow.domain.PluginDescriptor;
 import de.artignition.werkflow.service.PluginDiscoveryService;
 
 @RestController
